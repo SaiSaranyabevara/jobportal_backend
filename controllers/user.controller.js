@@ -1,8 +1,56 @@
-// import { User } from '../models/user.model.js';
-// import bcrypt from 'bcrypt';
-// import jwt from 'jsonwebtoken';
-// import getDataUri from '../utils/datauri.js';
-// import cloudinary from '../utils/cloudinary.js';
+import { User } from '../models/user.model.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import getDataUri from '../utils/datauri.js';
+import cloudinary from '../utils/cloudinary.js';
+
+export const register = async (req, res) => {
+    try {
+        console.log("Register called");
+        const { fullName, email, phoneNumber, password, role } = req.body;
+        console.log("Request body:", req.body);
+        if(!fullName || !email || !phoneNumber || !password || !role) {
+            return res.status(400).json({ message: 'All fields are required' , success :false });
+        };
+
+        const file = req.file;
+        console.log("File info:", file);
+
+        let profilePhotoUrl = "";
+
+        if (file) {
+          const fileUri = getDataUri(file);
+          console.log("File URI:", fileUri);
+          const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+          console.log("Cloudinary response:", cloudResponse);
+          profilePhotoUrl = cloudResponse.secure_url;
+        }
+
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: 'Email already exists', success :false });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("Hashed password:", hashedPassword);
+
+        await User.create({
+            fullName,
+            email,
+            phoneNumber,
+            password: hashedPassword,
+            role,
+            profile: {   
+              profilePhoto: profilePhotoUrl,
+            },
+        });
+        
+        res.status(201).json({ message: 'User registered successfully', success : true });
+    } catch (error) {
+        console.error("Error in register:", error);
+        res.status(500).json({ error: error.message });
+    }
+}
 
 
 // export const register = async (req, res) => {
@@ -45,68 +93,68 @@
 //     }
 // }
 
-import { User } from '../models/user.model.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import getDataUri from '../utils/datauri.js';
-import cloudinary from '../utils/cloudinary.js';
+// import { User } from '../models/user.model.js';
+// import bcrypt from 'bcrypt';
+// import jwt from 'jsonwebtoken';
+// import getDataUri from '../utils/datauri.js';
+// import cloudinary from '../utils/cloudinary.js';
 
-export const register = async (req, res) => {
-  try {
-    const { fullName, email, phoneNumber, password, role } = req.body;
+// export const register = async (req, res) => {
+//   try {
+//     const { fullName, email, phoneNumber, password, role } = req.body;
 
-    if (!fullName || !email || !phoneNumber || !password || !role) {
-      return res.status(400).json({ message: 'All fields are required', success: false });
-    }
+//     if (!fullName || !email || !phoneNumber || !password || !role) {
+//       return res.status(400).json({ message: 'All fields are required', success: false });
+//     }
 
-    const file = req.file;
-    let profilePhotoUrl = '';
+//     const file = req.file;
+//     let profilePhotoUrl = '';
 
-    if (file) {
-      const fileUri = getDataUri(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-      profilePhotoUrl = cloudResponse.secure_url;
-    }
+//     if (file) {
+//       const fileUri = getDataUri(file);
+//       const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+//       profilePhotoUrl = cloudResponse.secure_url;
+//     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists', success: false });
-    }
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       return res.status(400).json({ message: 'Email already exists', success: false });
+//     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      fullName,
-      email,
-      phoneNumber,
-      password: hashedPassword,
-      role,
-      profile: {
-        profilePhoto: profilePhotoUrl,
-      },
-    });
+//     const user = await User.create({
+//       fullName,
+//       email,
+//       phoneNumber,
+//       password: hashedPassword,
+//       role,
+//       profile: {
+//         profilePhoto: profilePhotoUrl,
+//       },
+//     });
 
-    // 🔐 Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
-      expiresIn: '7d',
-    });
+//     // 🔐 Generate JWT
+//     const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
+//       expiresIn: '7d',
+//     });
 
-    // 🍪 Send JWT in HTTP-only cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,        // required for vercel https
-      sameSite: 'None',    // required for cross-origin cookie
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    });
+//     // 🍪 Send JWT in HTTP-only cookie
+//     res.cookie('token', token, {
+//       httpOnly: true,
+//       secure: true,        // required for vercel https
+//       sameSite: 'None',    // required for cross-origin cookie
+//       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+//     });
 
-    return res.status(201).json({
-      message: 'User registered successfully',
-      success: true,
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message, success: false });
-  }
-};
+//     return res.status(201).json({
+//       message: 'User registered successfully',
+//       success: true,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ error: error.message, success: false });
+//   }
+// };
 
 
 export const  login = async (req,res) => {
