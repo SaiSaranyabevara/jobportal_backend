@@ -12,22 +12,22 @@ import applicationRoute from './routes/application.route.js';
 dotenv.config();
 
 
-app.get('/home',(req,res)=>{
-    return res.status(200).json({message:"hello world",success:true});
-})
+// app.get('/home',(req,res)=>{
+//     return res.status(200).json({message:"hello world",success:true});
+// })
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 const corsOptions=({
-   origin:["http://localhost:5173",
+   origin:
   "https://jobportal-frontend-green.vercel.app"
-    ],
+    ,
     credentials:true
 });
 app.use(cors(corsOptions));
 
-const port=process.env.port || 3000;
+const port=process.env.PORT || 3000;
 
 //api's 
 app.use('/api/v1/user',userRoute);
