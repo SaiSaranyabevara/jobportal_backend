@@ -4,36 +4,29 @@ import jwt from 'jsonwebtoken';
 import getDataUri from '../utils/datauri.js';
 import cloudinary from '../utils/cloudinary.js';
 
+
 export const register = async (req, res) => {
     try {
-        console.log("Register called");
         const { fullName, email, phoneNumber, password, role } = req.body;
-        console.log("Request body:", req.body);
         if(!fullName || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({ message: 'All fields are required' , success :false });
         };
 
-        const file = req.file;
-        console.log("File info:", file);
+      const file = req.file;
 
-        let profilePhotoUrl = "";
+let profilePhotoUrl = "";
 
-        if (file) {
-          const fileUri = getDataUri(file);
-          console.log("File URI:", fileUri);
-          const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-          console.log("Cloudinary response:", cloudResponse);
-          profilePhotoUrl = cloudResponse.secure_url;
-        }
+if (file) {
+  const fileUri = getDataUri(file);
+  const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+  profilePhotoUrl = cloudResponse.secure_url;
+}
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }); // check if user already exists 
         if (user) {
             return res.status(400).json({ message: 'Email already exists', success :false });
         }
-
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("Hashed password:", hashedPassword);
-
         await User.create({
             fullName,
             email,
@@ -42,16 +35,15 @@ export const register = async (req, res) => {
             role,
             profile: {   
               profilePhoto: profilePhotoUrl,
+               
             },
         });
         
         res.status(201).json({ message: 'User registered successfully', success : true });
     } catch (error) {
-        console.error("Error in register:", error);
         res.status(500).json({ error: error.message });
     }
 }
-
 
 // export const register = async (req, res) => {
 //     try {
