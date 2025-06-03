@@ -40,9 +40,15 @@ if (file) {
         });
         
         res.status(201).json({ message: 'User registered successfully', success : true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
     }
+    catch (error) {
+    console.error("Registration Error:", error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+}
+
+    // } catch (error) {
+    //     res.status(500).json({ error: error.message });
+    // }
 }
 
 // export const register = async (req, res) => {
