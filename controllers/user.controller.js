@@ -16,11 +16,25 @@ export const register = async (req, res) => {
 
 let profilePhotoUrl = "";
 
-if (file) {
-  const fileUri = getDataUri(file);
-  const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-  profilePhotoUrl = cloudResponse.secure_url;
+// if (file) {
+//   const fileUri = getDataUri(file);
+//   const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+//   profilePhotoUrl = cloudResponse.secure_url;
+// }
+        if (file) {
+  try {
+    console.log("File received in register:", file.originalname);
+    const fileUri = getDataUri(file);
+    console.log("Data URI content length:", fileUri.content?.length);
+
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+    profilePhotoUrl = cloudResponse.secure_url;
+  } catch (uploadError) {
+    console.error("Cloudinary Upload Error:", uploadError);
+    return res.status(500).json({ message: "Image upload failed", success: false });
+  }
 }
+
 
         let user = await User.findOne({ email }); // check if user already exists 
         if (user) {
