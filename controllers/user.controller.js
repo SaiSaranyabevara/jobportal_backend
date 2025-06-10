@@ -8,11 +8,12 @@ import cloudinary from '../utils/cloudinary.js';
 export const register = async (req, res) => {
     try {
         const { fullName, email, phoneNumber, password, role } = req.body;
-        if(!fullName || !email || !phoneNumber || !password || !role) {
+            const file = req.file;
+        if(!fullName || !email || !phoneNumber || !password || !role || !file) {
             return res.status(400).json({ message: 'All fields are required' , success :false });
         };
 
-      const file = req.file;
+  
 
 let profilePhotoUrl = "";
 
