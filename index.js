@@ -13,6 +13,9 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.get('/', (req, res) => {
+  res.status(200).send('Job Portal Backend is Running...');
+});
 
 // Middlewares
 app.use(express.json());
